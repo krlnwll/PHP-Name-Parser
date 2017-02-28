@@ -119,7 +119,8 @@ class FullNameParser {
           'BSc(MCRM)', 'BSc(Med)','BSc(Mid)','BSc(Min)','BSc(Psych)', 'BSc(Tech)','BSD', 'BSocSc','BSS','BStSu','BTchg','BTCP','BTech','BTechEd','BTh','BTheol','BTS','EdB','LittB','LLB','MA','MusB','ScBTech', 
           'CEng', 'FCA', 'CFA', 'Cfa', 'C.F.A.', 'LLB', 'LL.B', 'LLM', 'LL.M', 'CA(SA)', 'C.A.', 'CA','CPA',  'Solicitor',  'DMS', 'FIWO', 'CEnv', 'MICE', 'MIWEM', 'B.Com', 'BCom', 'BAcc', 'BA', 'BEc', 'MEc', 'HDip', 'B.Bus.', 'E.S.C.P.' )
     ),
-    'vowels' => array('a','e','i','o','u')
+    'vowels' => array('a','e','i','o','u'),
+    'fname2' => array('Ann', 'Anne', )  
   );
 
   protected $not_nicknames = array( "(hons)");
@@ -153,8 +154,11 @@ class FullNameParser {
     // $full_name = str_replace("(hons)", '', $full_name );
 
     # Setup default vars
-    extract(array('salutation' => '', 'fname' => '', 'initials' => '', 'lname' => '', 'lname_base' => '', 'lname_compound' => '', 'suffix' => ''));
+    extract(array('salutation' => '', 'finitial' => '', 'fname' => '', 'initials' => '', 'lname' => '', 'lname_base' => '', 'lname_compound' => '', 'suffix' => ''));
 
+      
+    ///////////////  PROFESSIONAL SUFFIXES
+      
     # Find all the professional suffixes possible
     $professional_suffix = $this->get_pro_suffix($full_name);
 
@@ -170,13 +174,17 @@ class FullNameParser {
         $first_suffix_index = $start;
       }
     }
-
+      
     // everything to the right of the first professional suffix is part of the suffix
     $suffix = mb_substr($full_name, $first_suffix_index);
 
     // remove the suffixes from the full_name
     $full_name = mb_substr($full_name, 0, $first_suffix_index);
+      
+    ///////////////  END PROFESSIONAL SUFFIXES
 
+    ///////////////  NICKNAME
+      
     # Deal with nickname, push to array
     $has_nick = $this->get_nickname($full_name);
     if ($has_nick) {
@@ -187,7 +195,10 @@ class FullNameParser {
       # Get rid of consecutive spaces left by the removal
       $full_name = str_replace('  ', ' ', $full_name);
     }
+      
+    ///////////////  END NICKNAME
     
+    ///////////////  SALUTATION/SUFFIXES
     # Grab a list of words from the remainder of the full name
     $unfiltered_name_parts = $this->break_words($full_name);
 
@@ -214,6 +225,7 @@ class FullNameParser {
       $salutation = "";
       $suffix = "";
     }
+    ///////////////  END SALUTATION/SUFFIXES
 
     // Re-pack the unfiltered name parts array and exclude empty words
     $name_arr = array();
@@ -235,6 +247,7 @@ class FullNameParser {
     # set the ending range after prefix/suffix trim
     $end = count($unfiltered_name_parts);
 
+    ///////////////  NAME PROCESS
     # concat the first name
     for ($i=0; $i<$end-1; $i++) {
       $word = $unfiltered_name_parts[$i];
@@ -248,15 +261,7 @@ class FullNameParser {
       if ($this->is_initial($word)) {
         # is the initial the first word?
         if ($i == 0) {
-          # if so, do a look-ahead to see if they go by their middle name
-          # for ex: "R. Jason Smith" => "Jason Smith" & "R." is stored as an initial
-          # but "R. J. Smith" => "R. Smith" and "J." is stored as an initial
-          if ($this->is_initial($unfiltered_name_parts[$i+1])) {
-            $fname .= " ".mb_strtoupper($word);
-          }
-          else {
-            $initials .= " ".mb_strtoupper($word);
-          }
+            $finitial .= " ".mb_strtoupper($word);
         }
         # otherwise, just go ahead and save the initial
         else {
@@ -268,6 +273,7 @@ class FullNameParser {
       }
     }
 
+    //LAST NAME
     if( count($unfiltered_name_parts)) {
       # check that we have more than 1 word in our string
       if ($end-0 > 1) {
@@ -288,9 +294,12 @@ class FullNameParser {
     } else {
       $fname = "";
     }
+      
+    ///////////////  END NAME PROCESS
 
     # return the various parts in an array
     $name['salutation'] = $salutation;
+    $name['finitial'] = trim($finitial);
     $name['fname'] = trim($fname);
     $name['initials'] = trim($initials);
     $name['lname'] = trim($lname);
