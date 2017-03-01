@@ -120,12 +120,11 @@ class FullNameParser {
           'CEng', 'FCA', 'CFA', 'Cfa', 'C.F.A.', 'LLB', 'LL.B', 'LLM', 'LL.M', 'CA(SA)', 'C.A.', 'CA','CPA',  'Solicitor',  'DMS', 'FIWO', 'CEnv', 'MICE', 'MIWEM', 'B.Com', 'BCom', 'BAcc', 'BA', 'BEc', 'MEc', 'HDip', 'B.Bus.', 'E.S.C.P.' )
     ),
     'vowels' => array('a','e','i','o','u'),
-    'fname2' => array('Ann', 'Anne', )  
+    'compound_first' => array('ann', 'anne')  
   );
 
   protected $not_nicknames = array( "(hons)");
-
-
+    
   /**
    * Parse Static entry point.
    *
@@ -250,28 +249,40 @@ class FullNameParser {
     ///////////////  NAME PROCESS
     # concat the first name
     for ($i=0; $i<$end-1; $i++) {
+        
       $word = $unfiltered_name_parts[$i];
+        
       # move on to parsing the last name if we find an indicator of a compound last name (Von, Van, etc)
       # we use $i != 0 to allow for rare cases where an indicator is actually the first name (like "Von Fabella")
       if ($this->is_compound($word) && $i != 0) {
         break;
       }
+        
+      if (!$this->is_compound_first($word) && $i != 0) {
+          echo $word; 
+          if($fname != '') {
+              break;
+          } 
+      }
+              
       # is it a middle initial or part of their first name?
       # if we start off with an initial, we'll call it the first name
       if ($this->is_initial($word)) {
         # is the initial the first word?
         if ($i == 0) {
-            $finitial .= " ".mb_strtoupper($word);
+            $finitial .= mb_strtoupper($word);
         }
         # otherwise, just go ahead and save the initial
         else {
           $initials .= " ".mb_strtoupper($word);
         }
       }
-      else {
+      else {  
         $fname .= " ".$this->fix_case($word);
       }
     }
+      
+    
 
     //LAST NAME
     if( count($unfiltered_name_parts)) {
@@ -451,10 +462,18 @@ class FullNameParser {
    * @return boolean
    */
   protected function is_compound($word) {
-    return array_search(mb_strtolower($word), $this->dict['compound']);
+    return in_array(mb_strtolower($word), $this->dict['compound']);
   }
-
-
+  
+  /**
+   * Checks our dictionary of compound indicators to see if first name is compound
+   *
+   * @param string $word the single word you wish to test
+   * @return boolean
+   */
+  protected function is_compound_first($word) {
+    return in_array(trim(mb_strtolower($word)), $this->dict['compound_first']);
+  }
 
   /**
    * Test string to see if it's a single letter/initial (period optional)
