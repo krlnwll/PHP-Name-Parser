@@ -120,7 +120,7 @@ class FullNameParser {
           'CEng', 'FCA', 'CFA', 'Cfa', 'C.F.A.', 'LLB', 'LL.B', 'LLM', 'LL.M', 'CA(SA)', 'C.A.', 'CA','CPA',  'Solicitor',  'DMS', 'FIWO', 'CEnv', 'MICE', 'MIWEM', 'B.Com', 'BCom', 'BAcc', 'BA', 'BEc', 'MEc', 'HDip', 'B.Bus.', 'E.S.C.P.' )
     ),
     'vowels' => array('a','e','i','o','u'),
-    'compound_first' => array('ann', 'anne')  
+    'compound_first' => array('ann', 'anne', 'marie', 'margaret', 'jo', 'lee', 'lou' ,'rose', 'ellen', 'jane', 'clare', 'lynn')  
   );
 
   protected $not_nicknames = array( "(hons)");
