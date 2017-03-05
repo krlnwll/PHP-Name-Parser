@@ -258,8 +258,8 @@ class FullNameParser {
         break;
       }
         
-      if (!$this->is_compound_first($word) && $i != 0) {
-          echo $word; 
+      //If we are past the first name and it is not a compund first or initial break.
+      if (!$this->is_compound_first($word) && $i != 0 && !$this->is_initial($word)) {
           if($fname != '') {
               break;
           } 
@@ -282,8 +282,6 @@ class FullNameParser {
       }
     }
       
-    
-
     //LAST NAME
     if( count($unfiltered_name_parts)) {
       # check that we have more than 1 word in our string
